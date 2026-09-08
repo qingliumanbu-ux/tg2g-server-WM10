@@ -100,7 +100,14 @@ int f_wma2_inq(EIClass * bcls_rec, EIClass * bcls_ret, CDbConnection * conn)
 
 		//拼装主档表
 		CDataTable T_TABLE_NAME;
-		sqlstr = "SELECT Name FROM SYSIBM.SYSTABLES WHERE TID <> 0 AND Name IN( 'TMMCR01','TMMHR01','TMMSM01','TMMHP01','TMMBW01')";
+		// DM8 适配 CHANGE-292:检查主档表是否存在;DB2 目录表 SYSIBM.SYSTABLES 改为 DM 的 Oracle 兼容视图 ALL_TABLES。
+		// 改写原因:DM 无 SYSIBM.SYSTABLES;ALL_TABLES 为 DM 官方 Oracle 兼容视图;原 TID<>0 条件随目录表一并去除;大小写与 IN 列表保持。
+		// 注意:原 DB2 语义为全库范围,ALL_TABLES 限当前用户可见范围;主档表与应用同 schema 时等价(schema 布局属部署契约,见台账)。
+		// 本语句为共用路径(无 DB_KIND 分支),DM8 直接执行;返回列用法 Rows[0][0] 保持不变;DM8 尚未实测。
+		// 原 SQL(完整保留):
+		// sqlstr = "SELECT Name FROM SYSIBM.SYSTABLES WHERE TID <> 0 AND Name IN( 'TMMCR01','TMMHR01','TMMSM01','TMMHP01','TMMBW01')";
+		// DM8 SQL：
+		sqlstr = "SELECT table_name FROM ALL_TABLES WHERE table_name IN( 'TMMCR01','TMMHR01','TMMSM01','TMMHP01','TMMBW01')";
 		Db::QueryTable(sqlstr, T_TABLE_NAME);
 		if (T_TABLE_NAME.Rows.get_Count() == 0){
 			sprintf(s.msg, "后台wm12_inq中未查询到主档表");

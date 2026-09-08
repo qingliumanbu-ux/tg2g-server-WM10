@@ -196,7 +196,13 @@ int f_wmhr_CraneCmd_C_Make(EIClass * bcls_rec, EIClass * bcls_ret, CDbConnection
 				twma7_in["YARD_LAYER_FROM"] = bcls_rec->Tables["WM00_CMD"].Rows[i]["YARD_LAYER_FROM"];
 				if (seqno == 0)
 				{
-					sqlstr = "values nextval for seqTest";
+// DM8 适配 CHANGE-273:查询。见改写原因。
+// 改写原因：DB2 取号语法 values nextval for 改为 DM 序列伪列 select <seq>.NEXTVAL from DUAL；依据 DM 官方文档,DM8 尚未实测。
+// 本共用分支面向 DM8,其他 DB_KIND 标签也会执行此 SQL;参数、结果列、条件与排序保持不变。
+// 原 SQL（完整保留）：
+					// sqlstr = "values nextval for seqTest";
+// DM8 SQL：
+					sqlstr = "values seqTest.NEXTVAL";
 					twma7_in["CMD_SEQ"] = atoi(Db::QueryCString(sqlstr));
 					//twma7_in["CMD_SEQ"] = Db::QueryCDecimal(sqla);
 					//twma7_in["CMD_SEQ"] = atoi(WM_Utility::GetSeqence("seqTest", conn));
@@ -640,7 +646,13 @@ int f_wmhr_CraneCmd_C_Make(EIClass * bcls_rec, EIClass * bcls_ret, CDbConnection
 					else
 					{
 						Log::Trace("", __FUNCTION__, "错误定位1");
-						sqlstr = "values nextval for seqTest";
+// DM8 适配 CHANGE-274:查询。见改写原因。
+// 改写原因：DB2 取号语法 values nextval for 改为 DM 序列伪列 select <seq>.NEXTVAL from DUAL；依据 DM 官方文档,DM8 尚未实测。
+// 本共用分支面向 DM8,其他 DB_KIND 标签也会执行此 SQL;参数、结果列、条件与排序保持不变。
+// 原 SQL（完整保留）：
+						// sqlstr = "values nextval for seqTest";
+// DM8 SQL：
+						sqlstr = "values seqTest.NEXTVAL";
 						Log::Trace("", __FUNCTION__, "错误定位2");
 						twma7_in["CMD_SEQ"] = atoi(Db::QueryCString(sqlstr));
 						Log::Trace("", __FUNCTION__, "错误定位3");
